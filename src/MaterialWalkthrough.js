@@ -48,6 +48,7 @@ function _log(context, message, ...attrs) {
  * @property {string|HTMLElement} target A selector or a pure Element that the walk will focus;
  * @property {string} content A HTML code that will be inserted on the walk-content container;
  * @property {string} [color] A HEX or a RGB/RGBA color that will paint the walk. #2196F3 is default;
+ * @property {string} [container] A selector for the container to scroll if not 'body';
  * @property {string} [acceptText] The text of the accept button of the walk;
  * @property {function} [onSet] A function that will be called when the walk content is setted;
  * @property {function} [onClose] A function that will be called when the walk is accepted;
@@ -232,9 +233,9 @@ export default class MaterialWalkthrough {
     _log('MSG', 'Setting a walk to #' + target.id);
     _log('WALK_SETUP', 'Properties:\n' + JSON.stringify(walkPoint, null, 2));
 
-    MaterialWalkthrough._setupListeners(target, walkPoint.onClose);
+    MaterialWalkthrough._setupListeners(target, walkPoint.container, walkPoint.onClose);
 
-    MaterialWalkthrough._locateTarget(target, () => {
+    MaterialWalkthrough._locateTarget(target, walkPoint.container, () => {
       MaterialWalkthrough._setProperties(walkPoint.content, walkPoint.color, walkPoint.acceptText);
       dom.setStyle(MaterialWalkthrough._wrapper, {display: 'block'});
 
@@ -260,12 +261,12 @@ export default class MaterialWalkthrough {
    * @param {HTMLElement} target  The target to set the update function
    * @returns {function} Update handler to call in the listeners
    */
-  static _createUpdateHandler(target) {
+  static _createUpdateHandler(target, container) {
     _log('WALK_UPDATE', 'Creating UpdateHandler for #' + target.id);
 
     const updateHandler = () => {
       _log('MSG', 'Updating and rendering');
-      MaterialWalkthrough._locateTarget(target, () => {
+      MaterialWalkthrough._locateTarget(target, container, () => {
         MaterialWalkthrough._renderFrame(target, () => {
           MaterialWalkthrough._renderContent(target);
         });
@@ -301,9 +302,9 @@ export default class MaterialWalkthrough {
    * @param {HTMLElement} target The target to set the listeners
    * @param {function} onClose Close callback
    */
-  static _setupListeners(target, onClose) {
+  static _setupListeners(target, container, onClose) {
     if (!!MaterialWalkthrough._instance.updateHandler) MaterialWalkthrough._flushListeners();
-    MaterialWalkthrough._instance.updateHandler = MaterialWalkthrough._createUpdateHandler(target);
+    MaterialWalkthrough._instance.updateHandler = MaterialWalkthrough._createUpdateHandler(target, container);
 
     window.addEventListener('resize', MaterialWalkthrough._instance.updateHandler);
     MaterialWalkthrough._instance.mutationObserver = new MutationObserver(MaterialWalkthrough._instance.updateHandler);
@@ -389,19 +390,42 @@ export default class MaterialWalkthrough {
    * @param {HTMLElement} target
    * @param {function} locateCallback
    */
-  static _locateTarget(target, locateCallback) {
+  static _locateTarget(target, containerSelector, locateCallback) {
+    const container = document.querySelector(containerSelector || 'body');
+    let containerClientHeight, containerScrollHeight, containerScrollTop;
+
+    if (container.tagName.toLowerCase() === 'body') {
+      // the window/body work differently to inner elements
+      // see https://javascript.info/size-and-scroll-window
+      containerClientHeight = document.documentElement.clientHeight;
+      containerScrollHeight = Math.max(
+        document.body.scrollHeight, document.documentElement.scrollHeight,
+        document.body.offsetHeight, document.documentElement.offsetHeight,
+        document.body.clientHeight, document.documentElement.clientHeight
+      );
+      containerScrollTop = window.pageYOffset;
+    } else {
+      containerClientHeight = container.clientHeight;
+      containerScrollHeight = container.scrollHeight;
+      containerScrollTop = container.scrollTop;
+    }
+    const containerTop = MaterialWalkthrough._position(container).top;
+    const maxScrollValue = containerScrollHeight - containerClientHeight;
+
     const { top } = MaterialWalkthrough._position(target);
-    const windowHeight = window.innerHeight;
-    const maxScrollValue = MaterialWalkthrough.CURRENT_DOCUMENT_HEIGHT - window.innerHeight;
-
     const { height } = target.getClientRects()[0];
-    const YCoordinate = top - (windowHeight / 2) + height / 2;
-    const secureYCoordinate = YCoordinate > maxScrollValue ? maxScrollValue : YCoordinate;
 
+    const YCoordinate = top - containerTop - (containerClientHeight / 2) + height / 2;
+    const secureYCoordinate = Math.min(YCoordinate, maxScrollValue);
 
     _log('WALK_LOCK', 'Moving Scroll to:', secureYCoordinate);
-    _log('WALK_LOCK', 'windowHeight:', windowHeight);
-    window.scrollTo(0, secureYCoordinate);
+    _log('WALK_LOCK', containerSelector + ' clientHeight:', containerClientHeight);
+
+    if (container.tagName.toLowerCase() === 'body') {
+      window.scrollTo(0, secureYCoordinate);
+    } else {
+      container.scrollTop = secureYCoordinate;
+    }
 
     // TODO: After the animation, timeout on callback
     if (locateCallback) locateCallback();

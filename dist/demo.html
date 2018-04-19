@@ -16,6 +16,7 @@
     <span id="target_3" style="position: relative; left: 15px; width: 200px; height: 50px; border: 1px solid black; display: block">Target #3</span>
     <span id="target_4" style="position: relative; left: 50%; width: 70px; top: 50%; display: block">Target #4</span>
     <div style="position: fixed; right: 0; bottom: 0"><span id="target_5">Target #5</span></div>
+    <div id="target_6_container" style="position: fixed; left: 0; top: 50%; height: 50px; overflow:scroll"><div style="height: 60px"></div><div><span id="target_6">Target #6</span></div><div style="height: 60px"></div></div>
 
     <script>
         function test() {
@@ -109,6 +110,12 @@
                target: '#target_5',
                content: 'Test 5',
                color: '#57d80d'
+             },
+             {
+               target: '#target_6',
+               content: 'Test 6',
+               color: '#57d80d',
+               container: '#target_6_container'
              }
             ]);
         }
