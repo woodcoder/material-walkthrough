@@ -160,7 +160,8 @@ export default class MaterialWalkthrough {
    * Main component template.
    * @type {string}
    */
-  static ELEMENT_TEMPLATE =
+  static elementTemplate () {
+    return
     `<div id='walk-wrapper' class='${MaterialWalkthrough.DISABLE_HUGE_ANIMATIONS ? 'animations-disabled' : ''} ${MaterialWalkthrough.FORCE_SMALL_BORDER ? 'small' : ''}'>
       <div id='walk-content-wrapper'>
         ${MaterialWalkthrough.ENABLE_STAGE_COUNTER ? STAGE_COUNTER_TEMPLATE : '' }        
@@ -245,7 +246,7 @@ export default class MaterialWalkthrough {
    * @private
    */
   static _init() {
-    dom.appendTo(dom.get('body'), MaterialWalkthrough.ELEMENT_TEMPLATE);
+    dom.appendTo(dom.get('body'), MaterialWalkthrough.elementTemplate());
     MaterialWalkthrough._wrapper = dom.get('#walk-wrapper');
     MaterialWalkthrough._contentWrapper = dom.get('#walk-content-wrapper');
     MaterialWalkthrough._content = dom.get('#walk-content');
@@ -275,7 +276,7 @@ export default class MaterialWalkthrough {
     }
 
     if (MaterialWalkthrough.ENABLE_STAGE_COUNTER) MaterialWalkthrough._instance.currentAccesibleStage++;
-    
+
     _log('MSG', '-------------------------------------');
     _log('MSG', 'Setting a walk to #' + target.id);
     _log('WALK_SETUP', 'Properties:\n' + JSON.stringify(walkPoint, null, 2));
@@ -577,16 +578,17 @@ export default class MaterialWalkthrough {
       meta.content = "";
       document.querySelector('head').appendChild(meta);
     }
-    if (MaterialWalkthrough.ENABLE_STAGE_COUNTER) _setupStageCounter
+    if (MaterialWalkthrough.ENABLE_STAGE_COUNTER) MaterialWalkthrough._setupStageCounter
     MaterialWalkthrough.to(walkPoints[0]);
   };
 
   // walk the stages to see which ones are actually accessible 
   // so the stage counter can show valid stages
-  _setupStageCounter () {
+  static _setupStageCounter () {
     _log('WALK_CONTENT', ' walking content to count valid stages...');
     MaterialWalkthrough._instance.totalAccessibleStages = 0
-    for (i = 0; i < MaterialWalkthrough._instance.points; i++) { 
+    let i = 0;
+    for (i = 0; i < MaterialWalkthrough._instance.points.length; i++) { 
       let target = MaterialWalkthrough._instance.points[i].target
       _log('WALK_CONTENT', `checking ${target}`);
       if(document.querySelector(target)) {
@@ -601,14 +603,18 @@ export default class MaterialWalkthrough {
    * @param {WalkPoint} walkPoint The configuration of the walkpoint
    */
   static to(walkPoint) {
-    if (MaterialWalkthrough.ENABLE_STAGE_COUNTER) {
-        document.querySelector('#walk-stage-step').textContent = MaterialWalkthrough._instance.totalAccessibleStages
-        document.querySelector('#walk-stage-total').textContent = MaterialWalkthrough._instance.totalAccessibleStages
-    }
-
     MaterialWalkthrough.CURRENT_DOCUMENT_HEIGHT = document.querySelector('html').offsetHeight;
     ScrollManager.disable();
     if (!MaterialWalkthrough.isInitialized) MaterialWalkthrough._init();
+
+    // setup the stage counter if required
+    if (MaterialWalkthrough.ENABLE_STAGE_COUNTER) {
+      let node = document.querySelector('#walk-stage-step')
+      if (node)node.textContent = MaterialWalkthrough._instance.currentAccesibleStage
+      node = document.querySelector('#walk-stage-total')
+      if (node)node.textContent = MaterialWalkthrough._instance.totalAccessibleStages
+    }
+
     dom.removeClass(MaterialWalkthrough._wrapper, 'closed');
     MaterialWalkthrough._setWalker(walkPoint);
   }
