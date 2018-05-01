@@ -289,10 +289,6 @@ export default class MaterialWalkthrough {
           MaterialWalkthrough._instance.points[MaterialWalkthrough._instance.currentIndex]
         );
       } else {
-        MaterialWalkthrough._instance.currentIndex = 0;
-        MaterialWalkthrough._instance.points = null;
-        if (MaterialWalkthrough._instance.onCloseCallback) MaterialWalkthrough._instance.onCloseCallback();
-        MaterialWalkthrough._instance.onCloseCallback = null;
         MaterialWalkthrough.closeWalker();
       }
   }
@@ -554,6 +550,19 @@ export default class MaterialWalkthrough {
    */
   static closeWalker() {
     _log('MSG', 'Closing Walker');
+
+    // these 4 lines used to be in the next method when reaching the end of the tour
+    // but putting them in here so they get mopped up when the tour is quit
+    MaterialWalkthrough._instance.currentIndex = 0;
+    MaterialWalkthrough._instance.points = null;
+    if (MaterialWalkthrough._instance.onCloseCallback) MaterialWalkthrough._instance.onCloseCallback();
+    MaterialWalkthrough._instance.onCloseCallback = null;
+    // plus clear any event listeners from the action button that may have not been cleared up if the quit button was hit
+    // we do this by replacing the button with a clone which will not have listeneners
+    let new_button = MaterialWalkthrough._actionButton.cloneNode(true);
+    MaterialWalkthrough._actionButton.parentNode.replaceChild(new_button, MaterialWalkthrough._actionButton);
+    MaterialWalkthrough._actionButton = new_button
+
     MaterialWalkthrough._flushListeners();
     ScrollManager.enable();
 
