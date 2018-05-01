@@ -612,7 +612,7 @@ export default class MaterialWalkthrough {
     for (i = 0; i < MaterialWalkthrough._instance.points.length; i++) { 
       let target = MaterialWalkthrough._instance.points[i].target
       _log('WALK_CONTENT', `checking ${target}`);
-      if (!MaterialWalkthrough._targetIsHidden(DOMUtils.get(target))) {
+      if (!MaterialWalkthrough._targetIsHidden(dom.get(target))) {
         _log('WALK_CONTENT', `target is present ${target}`);
         MaterialWalkthrough._instance.totalAccessibleStages++;
       }
