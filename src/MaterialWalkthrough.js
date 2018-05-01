@@ -283,7 +283,7 @@ export default class MaterialWalkthrough {
   static _setWalker(walkPoint) {
     let target = dom.get(walkPoint.target);
     // Check the style is present and that it is not hidden!
-    if (_targetIsHidden (target)) {
+    if (MaterialWalkthrough._targetIsHidden (target)) {
       _log('_setWalker', 'Target ' + walkPoint.target + ' not found or hidden. Skiping to next WalkPoint');
       MaterialWalkthrough._next();
       return;
@@ -612,7 +612,7 @@ export default class MaterialWalkthrough {
     for (i = 0; i < MaterialWalkthrough._instance.points.length; i++) { 
       let target = MaterialWalkthrough._instance.points[i].target
       _log('WALK_CONTENT', `checking ${target}`);
-      if(!MaterialWalkthrough._targetIsHidden(target)) {
+      if (!MaterialWalkthrough._targetIsHidden(DOMUtils.get(target))) {
         _log('WALK_CONTENT', `target is present ${target}`);
         MaterialWalkthrough._instance.totalAccessibleStages++;
       }
