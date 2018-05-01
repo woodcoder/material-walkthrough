@@ -282,12 +282,11 @@ export default class MaterialWalkthrough {
 
     if (MaterialWalkthrough.ENABLE_STAGE_COUNTER) {
       // setup the stage counter if required
-      if (MaterialWalkthrough.ENABLE_STAGE_COUNTER) {
-        MaterialWalkthrough._instance.currentAccesibleStage++;
-        var node = document.querySelector('#walk-stage-step');
-        if (node) node.textContent = MaterialWalkthrough._instance.currentAccesibleStage;
-        node = document.querySelector('#walk-stage-total');
-        if (node) node.textContent = MaterialWalkthrough._instance.totalAccessibleStages;
+      MaterialWalkthrough._instance.currentAccesibleStage++;
+      var node = document.querySelector('#walk-stage-step');
+      if (node) node.textContent = MaterialWalkthrough._instance.currentAccesibleStage;
+      node = document.querySelector('#walk-stage-total');
+      if (node) node.textContent = MaterialWalkthrough._instance.totalAccessibleStages;
       }
       
     _log('MSG', '-------------------------------------');
