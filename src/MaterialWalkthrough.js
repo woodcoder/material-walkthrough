@@ -233,13 +233,13 @@ export default class MaterialWalkthrough {
     _log('MSG', 'Setting a walk to #' + target.id);
     _log('WALK_SETUP', 'Properties:\n' + JSON.stringify(walkPoint, null, 2));
 
-    MaterialWalkthrough._setupListeners(target, walkPoint.container, walkPoint.onClose);
+    MaterialWalkthrough._setupListeners(target, walkPoint.container, walkPoint.onClose, walkPoint);
 
     MaterialWalkthrough._locateTarget(target, walkPoint.container, () => {
       MaterialWalkthrough._setProperties(walkPoint.content, walkPoint.color, walkPoint.acceptText);
       dom.setStyle(MaterialWalkthrough._wrapper, {display: 'block'});
 
-      MaterialWalkthrough._renderFrame(target, () => {
+      MaterialWalkthrough._renderFrame(target, walkpoint, () => {
         dom.addClass(MaterialWalkthrough._wrapper, 'opened');
         MaterialWalkthrough._renderContent(target, () => {
           dom.removeClass(MaterialWalkthrough._wrapper, 'transiting');
@@ -261,13 +261,13 @@ export default class MaterialWalkthrough {
    * @param {HTMLElement} target  The target to set the update function
    * @returns {function} Update handler to call in the listeners
    */
-  static _createUpdateHandler(target, container) {
+  static _createUpdateHandler(target, container, walkPoint) {
     _log('WALK_UPDATE', 'Creating UpdateHandler for #' + target.id);
 
     const updateHandler = () => {
       _log('MSG', 'Updating and rendering');
       MaterialWalkthrough._locateTarget(target, container, () => {
-        MaterialWalkthrough._renderFrame(target, () => {
+        MaterialWalkthrough._renderFrame(target, walkPoint, () => {
           MaterialWalkthrough._renderContent(target);
         });
       });
@@ -302,9 +302,9 @@ export default class MaterialWalkthrough {
    * @param {HTMLElement} target The target to set the listeners
    * @param {function} onClose Close callback
    */
-  static _setupListeners(target, container, onClose) {
+  static _setupListeners(target, container, onClose, walkPoint) {
     if (!!MaterialWalkthrough._instance.updateHandler) MaterialWalkthrough._flushListeners();
-    MaterialWalkthrough._instance.updateHandler = MaterialWalkthrough._createUpdateHandler(target, container);
+    MaterialWalkthrough._instance.updateHandler = MaterialWalkthrough._createUpdateHandler(target, container, walkPoint);
 
     window.addEventListener('resize', MaterialWalkthrough._instance.updateHandler);
     MaterialWalkthrough._instance.mutationObserver = new MutationObserver(MaterialWalkthrough._instance.updateHandler);
@@ -437,7 +437,7 @@ export default class MaterialWalkthrough {
    * @param {function} renderCallback
    * @private
    */
-  static _renderFrame(target, renderCallback) {
+  static _renderFrame(target, walkPoint, renderCallback) {
     // Use the client bounding rect that includes css translation etc.
     const { height, width, left, top } = target.getBoundingClientRect();
     // Adjust the top to be relative to the document
@@ -446,6 +446,7 @@ export default class MaterialWalkthrough {
     let holeSize = height > width ? height : width; // Catch the biggest measure
     // Adjust with default min measure if it not higher than it
     if (holeSize < MaterialWalkthrough.MIN_SIZE) holeSize = MaterialWalkthrough.MIN_SIZE;
+    if (walkPoint && walkPoint.holeSize) holeSize = walkPoint.holeSize;
     _log('WALK_LOCK', 'Walk hole size ' + holeSize + 'px');
 
     const positions = {
