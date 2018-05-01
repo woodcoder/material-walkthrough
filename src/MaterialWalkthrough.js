@@ -151,9 +151,9 @@ export default class MaterialWalkthrough {
   static STAGE_COUNTER_TEMPLATE = `
     <div id=\'walk-stage\'>
       <span id=\'walk-stage-step\'>Step</span>
-      <span id=\'walk-stage-index\'>1</span>
+      <span id=\'walk-stage-index\'></span>
       <span id=\'walk-stage-of\'>of</span>
-      <span id=\'walk-stage-total\'>1</span>
+      <span id=\'walk-stage-total\'></span>
     </div>`;
 
   /**
@@ -162,14 +162,14 @@ export default class MaterialWalkthrough {
    */
   static ELEMENT_TEMPLATE = null;
 
-    static elementTemplat() {
+    static elementTemplate() {
       return ELEMENT_TEMPLATE ||
       `<div id='walk-wrapper' class='${MaterialWalkthrough.DISABLE_HUGE_ANIMATIONS ? 'animations-disabled' : ''} ${MaterialWalkthrough.FORCE_SMALL_BORDER ? 'small' : ''}'>
         <div id='walk-content-wrapper'>
-          ${MaterialWalkthrough.ENABLE_STAGE_COUNTER ? STAGE_COUNTER_TEMPLATE : '' }        
+          ${MaterialWalkthrough.ENABLE_STAGE_COUNTER ? MaterialWalkthrough.STAGE_COUNTER_TEMPLATE : '' }        
           <div id='walk-content'></div>
           <button id='walk-action'></button>
-          ${MaterialWalkthrough.ENABLE_QUIT ? QUIT_TEMPLATE : '' }        
+          ${MaterialWalkthrough.ENABLE_QUIT ? MaterialWalkthrough.QUIT_TEMPLATE : '' }        
         </div>
       </div>`;  
     };
@@ -254,7 +254,9 @@ export default class MaterialWalkthrough {
     MaterialWalkthrough._contentWrapper = dom.get('#walk-content-wrapper');
     MaterialWalkthrough._content = dom.get('#walk-content');
     MaterialWalkthrough._actionButton = dom.get('#walk-action');
-    if(MaterialWalkthrough.ENABLE_STAGE_COUNTER) MaterialWalkthrough._stageCounterWrapper = dom.get('#walk-counter');
+    if(MaterialWalkthrough.ENABLE_STAGE_COUNTER) {
+      MaterialWalkthrough._stageCounterWrapper = dom.get('#walk-counter');
+    }
     if(MaterialWalkthrough.ENABLE_QUIT) MaterialWalkthrough._quitButton = dom.get('#walk-quit-button');
     
 
@@ -278,8 +280,16 @@ export default class MaterialWalkthrough {
       return;
     }
 
-    if (MaterialWalkthrough.ENABLE_STAGE_COUNTER) MaterialWalkthrough._instance.currentAccesibleStage++;
-
+    if (MaterialWalkthrough.ENABLE_STAGE_COUNTER) {
+      // setup the stage counter if required
+      if (MaterialWalkthrough.ENABLE_STAGE_COUNTER) {
+        MaterialWalkthrough._instance.currentAccesibleStage++;
+        var node = document.querySelector('#walk-stage-step');
+        if (node) node.textContent = MaterialWalkthrough._instance.currentAccesibleStage;
+        node = document.querySelector('#walk-stage-total');
+        if (node) node.textContent = MaterialWalkthrough._instance.totalAccessibleStages;
+      }
+      
     _log('MSG', '-------------------------------------');
     _log('MSG', 'Setting a walk to #' + target.id);
     _log('WALK_SETUP', 'Properties:\n' + JSON.stringify(walkPoint, null, 2));
@@ -571,6 +581,7 @@ export default class MaterialWalkthrough {
   static walk(walkPoints, callback) {
     MaterialWalkthrough._instance.points = walkPoints;
     MaterialWalkthrough._instance.currentIndex = 0;
+    MaterialWalkthrough._instance.currentAccesibleStage = 0;
     MaterialWalkthrough._instance.onCloseCallback = callback;
     if (document.querySelector('meta[name="theme-color"]'))
       MaterialWalkthrough.ORIGINAL_THEME_COLOR = document.querySelector('meta[name="theme-color"]').getAttribute('content');
@@ -581,7 +592,7 @@ export default class MaterialWalkthrough {
       meta.content = "";
       document.querySelector('head').appendChild(meta);
     }
-    if (MaterialWalkthrough.ENABLE_STAGE_COUNTER) MaterialWalkthrough._setupStageCounter
+    if (MaterialWalkthrough.ENABLE_STAGE_COUNTER) MaterialWalkthrough._setupStageCounter()
     MaterialWalkthrough.to(walkPoints[0]);
   };
 
@@ -631,6 +642,7 @@ export default class MaterialWalkthrough {
     // these 4 lines used to be in the next method when reaching the end of the tour
     // but putting them in here so they get mopped up when the tour is quit
     MaterialWalkthrough._instance.currentIndex = 0;
+    MaterialWalkthrough._instance.currentAccesibleStage = 0;
     MaterialWalkthrough._instance.points = null;
     if (MaterialWalkthrough._instance.onCloseCallback) MaterialWalkthrough._instance.onCloseCallback();
     MaterialWalkthrough._instance.onCloseCallback = null;
