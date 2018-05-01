@@ -159,11 +159,11 @@ export default class MaterialWalkthrough {
   /**
    * Main component template as ovverriden by consumer.
    * @type {string}
-   */
+   */ 
   static ELEMENT_TEMPLATE = null;
 
     static elementTemplate() {
-      return ELEMENT_TEMPLATE ||
+      return MaterialWalkthrough.ELEMENT_TEMPLATE ||
       `<div id='walk-wrapper' class='${MaterialWalkthrough.DISABLE_HUGE_ANIMATIONS ? 'animations-disabled' : ''} ${MaterialWalkthrough.FORCE_SMALL_BORDER ? 'small' : ''}'>
         <div id='walk-content-wrapper'>
           ${MaterialWalkthrough.ENABLE_STAGE_COUNTER ? MaterialWalkthrough.STAGE_COUNTER_TEMPLATE : '' }        
@@ -249,7 +249,7 @@ export default class MaterialWalkthrough {
    * @private
    */
   static _init() {
-    dom.appendTo(dom.get('body'), MaterialWalkthrough.elementTemplate);
+    dom.appendTo(dom.get('body'), MaterialWalkthrough.elementTemplate();
     MaterialWalkthrough._wrapper = dom.get('#walk-wrapper');
     MaterialWalkthrough._contentWrapper = dom.get('#walk-content-wrapper');
     MaterialWalkthrough._content = dom.get('#walk-content');
@@ -272,13 +272,15 @@ export default class MaterialWalkthrough {
    * @param {WalkPoint} walkPoint The properties for this walker
    */
   static _setWalker(walkPoint) {
-    let target = dom.get(walkPoint.target);
-
-    if (!target) {
-      _log('_setWalker', 'Target ' + walkPoint.target + ' not found. Skiping to next WalkPoint');
+    let target = DOMUtils.get(walkPoint.target);
+    let targetDisplayStyle = target.currentStyle ? target.currentStyle.display : getComputedStyle(target, null).display; 
+    // Check the style is present and that it is not hidden!
+    if (!target || (targetDisplayStyle && targetDisplayStyle === 'none')) {
+      _log('_setWalker', 'Target ' + walkPoint.target + ' not found or hidden. Skiping to next WalkPoint');
       MaterialWalkthrough._next();
       return;
     }
+
 
     if (MaterialWalkthrough.ENABLE_STAGE_COUNTER) {
       // setup the stage counter if required
@@ -591,7 +593,7 @@ export default class MaterialWalkthrough {
       meta.content = "";
       document.querySelector('head').appendChild(meta);
     }
-    if (MaterialWalkthrough.ENABLE_STAGE_COUNTER) MaterialWalkthrough._setupStageCounter()
+    if (MaterialWalkthrough.ENABLE_STAGE_COUNTER) MaterialWalkthrough._setupStageCounter();
     MaterialWalkthrough.to(walkPoints[0]);
   };
 
