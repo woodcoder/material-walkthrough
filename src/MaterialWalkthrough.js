@@ -264,24 +264,30 @@ export default class MaterialWalkthrough {
     if (MaterialWalkthrough.FORCE_SMALL_BORDER) dom.addClass(MaterialWalkthrough._wrapper, 'small');
 
     MaterialWalkthrough.isInitialized = true;
-  }
+  };
 
+  /**
+   * Check if a target exists and is visible in the page otherwise it should be discounted by the tour
+   */
+  static _targetIsHidden (target) {
+    let targetDisplayStyle = target.currentStyle ? target.currentStyle.display : getComputedStyle(target, null).display; 
+    // Check the style is present and that it is not hidden!
+    return  (!target || (targetDisplayStyle && targetDisplayStyle === 'none'))
+  }
+  
   /***
    * Set the opened walker to a target with the properties from walkPoint.
    * @param {string|HTMLElement} target A query or a Element to target the walker
    * @param {WalkPoint} walkPoint The properties for this walker
    */
   static _setWalker(walkPoint) {
-    let target = DOMUtils.get(walkPoint.target);
-    let targetDisplayStyle = target.currentStyle ? target.currentStyle.display : getComputedStyle(target, null).display; 
+    let target = dom.get(walkPoint.target);
     // Check the style is present and that it is not hidden!
-    if (!target || (targetDisplayStyle && targetDisplayStyle === 'none')) {
+    if (_targetIsHidden (target)) {
       _log('_setWalker', 'Target ' + walkPoint.target + ' not found or hidden. Skiping to next WalkPoint');
       MaterialWalkthrough._next();
       return;
     }
-
-
     if (MaterialWalkthrough.ENABLE_STAGE_COUNTER) {
       // setup the stage counter if required
       MaterialWalkthrough._instance.currentAccesibleStage++;
@@ -606,7 +612,7 @@ export default class MaterialWalkthrough {
     for (i = 0; i < MaterialWalkthrough._instance.points.length; i++) { 
       let target = MaterialWalkthrough._instance.points[i].target
       _log('WALK_CONTENT', `checking ${target}`);
-      if(document.querySelector(target)) {
+      if(!MaterialWalkthrough._targetIsHidden(target)) {
         _log('WALK_CONTENT', `target is present ${target}`);
         MaterialWalkthrough._instance.totalAccessibleStages++;
       }
