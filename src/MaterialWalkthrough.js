@@ -157,19 +157,22 @@ export default class MaterialWalkthrough {
     </div>`;
 
   /**
-   * Main component template.
+   * Main component template as ovverriden by consumer.
    * @type {string}
    */
-  static elementTemplate () {
-    return
-    `<div id='walk-wrapper' class='${MaterialWalkthrough.DISABLE_HUGE_ANIMATIONS ? 'animations-disabled' : ''} ${MaterialWalkthrough.FORCE_SMALL_BORDER ? 'small' : ''}'>
-      <div id='walk-content-wrapper'>
-        ${MaterialWalkthrough.ENABLE_STAGE_COUNTER ? STAGE_COUNTER_TEMPLATE : '' }        
-        <div id='walk-content'></div>
-        <button id='walk-action'></button>
-        ${MaterialWalkthrough.ENABLE_QUIT ? QUIT_TEMPLATE : '' }        
-      </div>
-    </div>`;
+  static ELEMENT_TEMPLATE = null;
+
+    static elementTemplat() {
+      return ELEMENT_TEMPLATE ||
+      `<div id='walk-wrapper' class='${MaterialWalkthrough.DISABLE_HUGE_ANIMATIONS ? 'animations-disabled' : ''} ${MaterialWalkthrough.FORCE_SMALL_BORDER ? 'small' : ''}'>
+        <div id='walk-content-wrapper'>
+          ${MaterialWalkthrough.ENABLE_STAGE_COUNTER ? STAGE_COUNTER_TEMPLATE : '' }        
+          <div id='walk-content'></div>
+          <button id='walk-action'></button>
+          ${MaterialWalkthrough.ENABLE_QUIT ? QUIT_TEMPLATE : '' }        
+        </div>
+      </div>`;  
+    };
 
   /**
    * Assigned to true after the component is settled into the document.
@@ -246,7 +249,7 @@ export default class MaterialWalkthrough {
    * @private
    */
   static _init() {
-    dom.appendTo(dom.get('body'), MaterialWalkthrough.elementTemplate());
+    dom.appendTo(dom.get('body'), MaterialWalkthrough.elementTemplate);
     MaterialWalkthrough._wrapper = dom.get('#walk-wrapper');
     MaterialWalkthrough._contentWrapper = dom.get('#walk-content-wrapper');
     MaterialWalkthrough._content = dom.get('#walk-content');
