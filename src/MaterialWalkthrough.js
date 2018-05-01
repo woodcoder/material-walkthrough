@@ -249,7 +249,7 @@ export default class MaterialWalkthrough {
    * @private
    */
   static _init() {
-    dom.appendTo(dom.get('body'), MaterialWalkthrough.elementTemplate();
+    dom.appendTo(dom.get('body'), MaterialWalkthrough.elementTemplate());
     MaterialWalkthrough._wrapper = dom.get('#walk-wrapper');
     MaterialWalkthrough._contentWrapper = dom.get('#walk-content-wrapper');
     MaterialWalkthrough._content = dom.get('#walk-content');
