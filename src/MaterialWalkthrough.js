@@ -270,9 +270,10 @@ export default class MaterialWalkthrough {
    * Check if a target exists and is visible in the page otherwise it should be discounted by the tour
    */
   static _targetIsHidden (target) {
-    let targetDisplayStyle = target.currentStyle ? target.currentStyle.display : getComputedStyle(target, null).display; 
+    if (!target) return true;
+    var targetDisplayStyle = target.currentStyle ? target.currentStyle.display : getComputedStyle(target, null).display;
     // Check the style is present and that it is not hidden!
-    return  (!target || (targetDisplayStyle && targetDisplayStyle === 'none'))
+    return targetDisplayStyle && targetDisplayStyle === 'none';
   }
   
   /***
