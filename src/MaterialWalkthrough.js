@@ -575,7 +575,7 @@ export default class MaterialWalkthrough {
       top = itCanBeRenderedInTop ? '-' + MaterialWalkthrough._contentWrapper.offsetHeight + 'px' : MaterialWalkthrough._wrapper.offsetHeight / 2 - MaterialWalkthrough._contentWrapper.offsetHeight / 2 + 'px';
       marginLeft = itCanBeRenderedInTop ? 0 : !itCanBeRenderedInRight ? '-10px' : '10px';
     }
-    DOMUtils.setStyle(MaterialWalkthrough._contentWrapper, { left: left, top: top, textAlign: textAlign, marginTop: marginTop, marginLeft: marginLeft });
+    dom.setStyle(MaterialWalkthrough._contentWrapper, { left: left, top: top, textAlign: textAlign, marginTop: marginTop, marginLeft: marginLeft });
 
     // now we have placed it lets see if its content wrapper is overhanging the screen and if so simply centre it
     // but assume a margin
@@ -593,9 +593,9 @@ export default class MaterialWalkthrough {
       }
       marginLeft = marginLeft + leftShift + 'px'
       //debugger
-      DOMUtils.setStyle(MaterialWalkthrough._contentWrapper, { 'margin-left': marginLeft});
+      dom.setStyle(MaterialWalkthrough._contentWrapper, { 'margin-left': marginLeft});
     }
-    
+
     if (renderCallback) renderCallback();
   }
 
