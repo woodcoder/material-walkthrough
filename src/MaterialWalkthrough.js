@@ -513,6 +513,7 @@ export default class MaterialWalkthrough {
     if (holeSize < MaterialWalkthrough.MIN_SIZE) holeSize = MaterialWalkthrough.MIN_SIZE;
     if (walkPoint && walkPoint.holeSize) holeSize = walkPoint.holeSize;
     _log('WALK_LOCK', 'Walk hole size ' + holeSize + 'px');
+    _log('WALK_LOCK', 'Gutter is ' + MaterialWalkthrough.GUTTER);
 
     const positions = {
       height: (holeSize + MaterialWalkthrough.GUTTER) + 'px',
@@ -566,18 +567,35 @@ export default class MaterialWalkthrough {
     let textAlign = 'left';
 
     if (!itCanBeRenderedInRight) {
-      left = itCanBeRenderedInLeft ? '-' + MaterialWalkthrough._contentWrapper.offsetWidth + 'px'
-        : 'calc(50% - 100px)';
+      left = itCanBeRenderedInLeft ? '-' + MaterialWalkthrough._contentWrapper.offsetWidth + 'px' : 'calc(50% - 100px)';
       textAlign = itCanBeRenderedInLeft ? 'right' : 'center';
-      marginTop = itCanBeRenderedInLeft ? 0 : (itCanBeRenderedInBottom ? '20px' : '-20px');
+      marginTop = itCanBeRenderedInLeft ? 0 : itCanBeRenderedInBottom ? '10px' : '-10px';
     }
     if (!itCanBeRenderedInBottom) {
-      top = itCanBeRenderedInTop ? '-' + MaterialWalkthrough._contentWrapper.offsetHeight + 'px'
-        : MaterialWalkthrough._wrapper.offsetHeight / 2 - MaterialWalkthrough._contentWrapper.offsetHeight / 2 + 'px';
-      marginLeft = itCanBeRenderedInTop ? 0 : (!itCanBeRenderedInRight ? '-20px' : '20px');
+      top = itCanBeRenderedInTop ? '-' + MaterialWalkthrough._contentWrapper.offsetHeight + 'px' : MaterialWalkthrough._wrapper.offsetHeight / 2 - MaterialWalkthrough._contentWrapper.offsetHeight / 2 + 'px';
+      marginLeft = itCanBeRenderedInTop ? 0 : !itCanBeRenderedInRight ? '-10px' : '10px';
     }
-    dom.setStyle(MaterialWalkthrough._contentWrapper, {left, top, textAlign, marginTop, marginLeft});
+    DOMUtils.setStyle(MaterialWalkthrough._contentWrapper, { left: left, top: top, textAlign: textAlign, marginTop: marginTop, marginLeft: marginLeft });
 
+    // now we have placed it lets see if its content wrapper is overhanging the screen and if so simply centre it
+    // but assume a margin
+    let cwPosition = MaterialWalkthrough._contentWrapper.getBoundingClientRect();
+    let margin = 20
+    if(cwPosition.x < margin || cwPosition.x + cwPosition.width + margin > window.innerWidth) {
+      _log('WALK_CONTENT', 'Text would overhang to left or right: will centre ' )
+      let newAbsoluteLeftPos = ((window.innerWidth / 2) - (cwPosition.width / 2))
+      // calc how much we need to move the current x to the new x to acheive the newAbsoluteLeftPos
+      let leftShift
+      if (cwPosition.x < margin) { // shift it right 
+        leftShift = newAbsoluteLeftPos - cwPosition.x
+      } else { //shift it left
+        leftShift =  - (cwPosition.x - newAbsoluteLeftPos) 
+      }
+      marginLeft = marginLeft + leftShift + 'px'
+      //debugger
+      DOMUtils.setStyle(MaterialWalkthrough._contentWrapper, { 'margin-left': marginLeft});
+    }
+    
     if (renderCallback) renderCallback();
   }
 
