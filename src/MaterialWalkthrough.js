@@ -581,15 +581,15 @@ export default class MaterialWalkthrough {
     // but assume a margin
     let cwPosition = MaterialWalkthrough._contentWrapper.getBoundingClientRect();
     let margin = 20
-    if(cwPosition.x < margin || cwPosition.x + cwPosition.width + margin > window.innerWidth) {
+    if(cwPosition.left < margin || cwPosition.left + cwPosition.width + margin > window.innerWidth) {
       _log('WALK_CONTENT', 'Text would overhang to left or right: will centre ' )
       let newAbsoluteLeftPos = ((window.innerWidth / 2) - (cwPosition.width / 2))
       // calc how much we need to move the current x to the new x to acheive the newAbsoluteLeftPos
       let leftShift
-      if (cwPosition.x < margin) { // shift it right 
-        leftShift = newAbsoluteLeftPos - cwPosition.x
+      if (cwPosition.left < margin) { // shift it right 
+        leftShift = newAbsoluteLeftPos - cwPosition.left
       } else { //shift it left
-        leftShift =  - (cwPosition.x - newAbsoluteLeftPos) 
+        leftShift =  - (cwPosition.left - newAbsoluteLeftPos) 
       }
       marginLeft = marginLeft + leftShift + 'px'
       //debugger
