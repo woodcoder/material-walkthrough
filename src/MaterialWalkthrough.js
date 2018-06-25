@@ -139,7 +139,7 @@ export default class MaterialWalkthrough {
    * @type {boolean}
    */
   static ENABLE_QUIT = false;
-  static QUIT_TEMPLATE = '<a id=\'walk-quit-button\'>quit tour</a>';
+  static QUIT_TEMPLATE = '<a id=\'walk-quit-button\'>Quit tour</a>';
   
 
   /**
