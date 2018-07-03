@@ -272,6 +272,14 @@ export default class MaterialWalkthrough {
   static _targetIsHidden (target) {
     if (!target) return true;
     var targetDisplayStyle = target.currentStyle ? target.currentStyle.display : getComputedStyle(target, null).display;
+    
+    // in some cases the parent is hidden rather than the actual target
+    // as a result the normal checking for display='none' does not work
+    // the following check adds an extra check that picks up if a parent
+    // is indeed hidden
+    if (target && target.getClientRects().length === 0) { 
+      return true
+    }
     // Check the style is present and that it is not hidden!
     return targetDisplayStyle && targetDisplayStyle === 'none';
   }
