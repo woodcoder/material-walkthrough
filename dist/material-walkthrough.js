@@ -415,6 +415,7 @@ function _log(context, message) {
  * @property {string|HTMLElement} target A selector or a pure Element that the walk will focus;
  * @property {string} content A HTML code that will be inserted on the walk-content container;
  * @property {string} [color] A HEX or a RGB/RGBA color that will paint the walk. #2196F3 is default;
+ * @property {string} [container] A selector for the container to scroll if not 'body';
  * @property {string} [acceptText] The text of the accept button of the walk;
  * @property {function} [onSet] A function that will be called when the walk content is setted;
  * @property {function} [onClose] A function that will be called when the walk is accepted;
@@ -444,34 +445,7 @@ var MaterialWalkthrough = function () {
   }
 
   createClass(MaterialWalkthrough, null, [{
-    key: '_init',
-
-
-    /**
-     * Initialize the component in the document, appending `ELEMENT_TEMPLATE`,
-     * and initialize the element references (`_wrapper`, `_contentWrapper`, `_content`, `_actionButton`);
-     * @private
-     */
-
-
-    /**
-     * Caches the action button element.
-     * @type {HTMLElement}
-     * @private
-     */
-
-
-    /**
-     * Caches the content text wrapper element.
-     * @type {HTMLElement}
-     * @private
-     */
-
-
-    /**
-     * Assigned to true after the component is settled into the document.
-     * @type {boolean}
-     */
+    key: 'elementTemplate',
 
 
     /**
@@ -504,56 +478,27 @@ var MaterialWalkthrough = function () {
      * Calculated by `document.querySelector('html').offsetHeight` at `MaterialWalkthrough.to` method.
      * @type {number}
      */
-    value: function _init() {
-      DOMUtils.appendTo(DOMUtils.get('body'), MaterialWalkthrough.ELEMENT_TEMPLATE);
-      MaterialWalkthrough._wrapper = DOMUtils.get('#walk-wrapper');
-      MaterialWalkthrough._contentWrapper = DOMUtils.get('#walk-content-wrapper');
-      MaterialWalkthrough._content = DOMUtils.get('#walk-content');
-      MaterialWalkthrough._actionButton = DOMUtils.get('#walk-action');
-
-      if (MaterialWalkthrough.DISABLE_HUGE_ANIMATIONS) DOMUtils.addClass(MaterialWalkthrough._wrapper, 'animations-disabled');
-      if (MaterialWalkthrough.FORCE_SMALL_BORDER) DOMUtils.addClass(MaterialWalkthrough._wrapper, 'small');
-
-      MaterialWalkthrough.isInitialized = true;
+    value: function elementTemplate() {
+      return MaterialWalkthrough.ELEMENT_TEMPLATE || '<div id=\'walk-wrapper\' class=\'' + (MaterialWalkthrough.DISABLE_HUGE_ANIMATIONS ? 'animations-disabled' : '') + ' ' + (MaterialWalkthrough.FORCE_SMALL_BORDER ? 'small' : '') + '\'>\n        <div id=\'walk-content-wrapper\'>\n          ' + (MaterialWalkthrough.ENABLE_STAGE_COUNTER ? MaterialWalkthrough.STAGE_COUNTER_TEMPLATE : '') + '        \n          <div id=\'walk-content\'></div>\n          <button id=\'walk-action\'></button>\n          ' + (MaterialWalkthrough.ENABLE_QUIT ? MaterialWalkthrough.QUIT_TEMPLATE : '') + '        \n        </div>\n      </div>';
     }
 
-    /***
-     * Set the opened walker to a target with the properties from walkPoint.
-     * @param {string|HTMLElement} target A query or a Element to target the walker
-     * @param {WalkPoint} walkPoint The properties for this walker
-     */
-
-
     /**
-     * Contains the current walkthrough configuration.
-     * @type {{
-     *   updateHandler: Function,
-     *   mutationObserver: MutationObserver,
-     *   points: Array<WalkPoint>,
-     *   currentIndex: Integer,
-     *   onCloseCallback: Function
-     * }}
-     * @private
-     */
-
-
-    /**
-     * Caches the content text element.
-     * @type {HTMLElement}
-     * @private
-     */
-
-
-    /**
-     * Caches the wrapper element.
-     * @type {HTMLElement}
-     * @private
-     */
-
-
-    /**
-     * Main component template.
+     * Main component template as ovverriden by consumer.
      * @type {string}
+     */
+
+
+    /**
+     * Allow a stage counter to be present in the tour
+     * Default is false.
+     * @type {boolean}
+     */
+
+
+    /**
+     * Allow a quit button to be present to quit the tour
+     * Default is false.
+     * @type {boolean}
      */
 
 
@@ -583,28 +528,150 @@ var MaterialWalkthrough = function () {
      * @type {string}
      */
 
+
+    /**
+     * Assigned to true after the component is settled into the document.
+     * @type {boolean}
+     */
+
+
+    /**
+     * Caches the wrapper element.
+     * @type {HTMLElement}
+     * @private
+     */
+
+
+    /**
+     * Caches the content text wrapper element.
+     * @type {HTMLElement}
+     * @private
+     */
+
+
+    /**
+     * Caches the content text element.
+     * @type {HTMLElement}
+     * @private
+     */
+
+
+    /**
+     * Caches the action button element.
+     * @type {HTMLElement}
+     * @private
+     */
+
+
+    /**
+     * Caches the stage_counter wrapper element.
+     * @type {HTMLElement}
+     * @private
+     */
+
+
+    /**
+     * Caches the quit button element.
+     * @type {HTMLElement}
+     * @private
+     */
+
+
+    /**
+     * Contains the current walkthrough configuration.
+     * @type {{
+     *   updateHandler: Function,
+     *   mutationObserver: MutationObserver,
+     *   points: Array<WalkPoint>,
+     *   currentIndex: Integer,
+     *   onCloseCallback: Function
+     * }}
+     * @private
+     */
+
+  }, {
+    key: '_init',
+
+
+    /**
+     * Initialize the component in the document, appending `ELEMENT_TEMPLATE`,
+     * and initialize the element references (`_wrapper`, `_contentWrapper`, `_content`, `_actionButton`);
+     * @private
+     */
+    value: function _init() {
+      DOMUtils.appendTo(DOMUtils.get('body'), MaterialWalkthrough.elementTemplate());
+      MaterialWalkthrough._wrapper = DOMUtils.get('#walk-wrapper');
+      MaterialWalkthrough._contentWrapper = DOMUtils.get('#walk-content-wrapper');
+      MaterialWalkthrough._content = DOMUtils.get('#walk-content');
+      MaterialWalkthrough._actionButton = DOMUtils.get('#walk-action');
+      if (MaterialWalkthrough.ENABLE_STAGE_COUNTER) {
+        MaterialWalkthrough._stageCounterWrapper = DOMUtils.get('#walk-counter');
+      }
+      if (MaterialWalkthrough.ENABLE_QUIT) MaterialWalkthrough._quitButton = DOMUtils.get('#walk-quit-button');
+
+      if (MaterialWalkthrough.DISABLE_HUGE_ANIMATIONS) DOMUtils.addClass(MaterialWalkthrough._wrapper, 'animations-disabled');
+      if (MaterialWalkthrough.FORCE_SMALL_BORDER) DOMUtils.addClass(MaterialWalkthrough._wrapper, 'small');
+
+      MaterialWalkthrough.isInitialized = true;
+    }
+  }, {
+    key: '_targetIsHidden',
+
+
+    /**
+     * Check if a target exists and is visible in the page otherwise it should be discounted by the tour
+     */
+    value: function _targetIsHidden(target) {
+      if (!target) return true;
+      var targetDisplayStyle = target.currentStyle ? target.currentStyle.display : getComputedStyle(target, null).display;
+
+      // in some cases the parent is hidden rather than the actual target
+      // as a result the normal checking for display='none' does not work
+      // the following check adds an extra check that picks up if a parent
+      // is indeed hidden
+      if (target && target.getClientRects().length === 0) {
+        return true;
+      }
+      // Check the style is present and that it is not hidden!
+      return targetDisplayStyle && targetDisplayStyle === 'none';
+    }
+
+    /***
+     * Set the opened walker to a target with the properties from walkPoint.
+     * @param {string|HTMLElement} target A query or a Element to target the walker
+     * @param {WalkPoint} walkPoint The properties for this walker
+     */
+
   }, {
     key: '_setWalker',
     value: function _setWalker(walkPoint) {
       var target = DOMUtils.get(walkPoint.target);
-
-      if (!target) {
-        _log('_setWalker', 'Target ' + walkPoint.target + ' not found. Skiping to next WalkPoint');
+      // Check the style is present and that it is not hidden!
+      if (MaterialWalkthrough._targetIsHidden(target)) {
+        _log('_setWalker', 'Target ' + walkPoint.target + ' not found or hidden. Skiping to next WalkPoint');
         MaterialWalkthrough._next();
         return;
+      }
+      if (MaterialWalkthrough.ENABLE_STAGE_COUNTER) {
+        // setup the stage counter if required
+        MaterialWalkthrough._instance.currentAccesibleStage++;
+        var node = document.querySelector('#walk-stage-step');
+        if (node) node.textContent = MaterialWalkthrough._instance.currentAccesibleStage;
+        node = document.querySelector('#walk-stage-total');
+        if (node) node.textContent = MaterialWalkthrough._instance.totalAccessibleStages;
       }
 
       _log('MSG', '-------------------------------------');
       _log('MSG', 'Setting a walk to #' + target.id);
       _log('WALK_SETUP', 'Properties:\n' + JSON.stringify(walkPoint, null, 2));
 
-      MaterialWalkthrough._setupListeners(target, walkPoint.onClose);
+      MaterialWalkthrough._setupListeners(target, walkPoint.container, walkPoint.onClose, walkPoint);
 
-      MaterialWalkthrough._locateTarget(target, function () {
+      MaterialWalkthrough._locateTarget(target, walkPoint.container, function () {
         MaterialWalkthrough._setProperties(walkPoint.content, walkPoint.color, walkPoint.acceptText);
         DOMUtils.setStyle(MaterialWalkthrough._wrapper, { display: 'block' });
 
-        MaterialWalkthrough._renderFrame(target, function () {
+        MaterialWalkthrough._renderFrame(target, walkPoint, function () {
           DOMUtils.addClass(MaterialWalkthrough._wrapper, 'opened');
           MaterialWalkthrough._renderContent(target, function () {
             DOMUtils.removeClass(MaterialWalkthrough._wrapper, 'transiting');
@@ -629,13 +696,13 @@ var MaterialWalkthrough = function () {
 
   }, {
     key: '_createUpdateHandler',
-    value: function _createUpdateHandler(target) {
+    value: function _createUpdateHandler(target, container, walkPoint) {
       _log('WALK_UPDATE', 'Creating UpdateHandler for #' + target.id);
 
       var updateHandler = function updateHandler() {
         _log('MSG', 'Updating and rendering');
-        MaterialWalkthrough._locateTarget(target, function () {
-          MaterialWalkthrough._renderFrame(target, function () {
+        MaterialWalkthrough._locateTarget(target, container, function () {
+          MaterialWalkthrough._renderFrame(target, walkPoint, function () {
             MaterialWalkthrough._renderContent(target);
           });
         });
@@ -658,10 +725,6 @@ var MaterialWalkthrough = function () {
         MaterialWalkthrough._instance.currentIndex++;
         MaterialWalkthrough._setWalker(MaterialWalkthrough._instance.points[MaterialWalkthrough._instance.currentIndex]);
       } else {
-        MaterialWalkthrough._instance.currentIndex = 0;
-        MaterialWalkthrough._instance.points = null;
-        if (MaterialWalkthrough._instance.onCloseCallback) MaterialWalkthrough._instance.onCloseCallback();
-        MaterialWalkthrough._instance.onCloseCallback = null;
         MaterialWalkthrough.closeWalker();
       }
     }
@@ -674,9 +737,9 @@ var MaterialWalkthrough = function () {
 
   }, {
     key: '_setupListeners',
-    value: function _setupListeners(target, onClose) {
+    value: function _setupListeners(target, container, onClose, walkPoint) {
       if (!!MaterialWalkthrough._instance.updateHandler) MaterialWalkthrough._flushListeners();
-      MaterialWalkthrough._instance.updateHandler = MaterialWalkthrough._createUpdateHandler(target);
+      MaterialWalkthrough._instance.updateHandler = MaterialWalkthrough._createUpdateHandler(target, container, walkPoint);
 
       window.addEventListener('resize', MaterialWalkthrough._instance.updateHandler);
       MaterialWalkthrough._instance.mutationObserver = new MutationObserver(MaterialWalkthrough._instance.updateHandler);
@@ -745,6 +808,24 @@ var MaterialWalkthrough = function () {
       }
     }
 
+    /***
+     * Sum the offsetTop and offsetLeft of all parents
+     * @param {HTMLElement} target
+     */
+
+  }, {
+    key: '_position',
+    value: function _position(target) {
+      var left = 0;
+      var top = 0;
+      do {
+        left += target.offsetLeft;
+        top += target.offsetTop;
+        target = target.offsetParent;
+      } while (target !== null);
+      return { left: left, top: top };
+    }
+
     // @TODO: Animate the scroll.
     /***
      * Centralize the scroll to a target.
@@ -754,19 +835,42 @@ var MaterialWalkthrough = function () {
 
   }, {
     key: '_locateTarget',
-    value: function _locateTarget(target, locateCallback) {
-      var top = target.offsetTop;
-      var windowHeight = window.innerHeight;
-      var maxScrollValue = MaterialWalkthrough.CURRENT_DOCUMENT_HEIGHT - window.innerHeight;
+    value: function _locateTarget(target, containerSelector, locateCallback) {
+      var container = document.querySelector(containerSelector || 'body');
+      var containerClientHeight = void 0,
+          containerScrollHeight = void 0;
+
+      if (container.tagName.toLowerCase() === 'body') {
+        // the window/body work differently to inner elements
+        // see https://javascript.info/size-and-scroll-window
+        containerClientHeight = document.documentElement.clientHeight;
+        containerScrollHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight, document.body.offsetHeight, document.documentElement.offsetHeight, document.body.clientHeight, document.documentElement.clientHeight);
+        
+      } else {
+        containerClientHeight = container.clientHeight;
+        containerScrollHeight = container.scrollHeight;
+        
+      }
+      var containerTop = MaterialWalkthrough._position(container).top;
+      var maxScrollValue = containerScrollHeight - containerClientHeight;
+
+      var _MaterialWalkthrough$ = MaterialWalkthrough._position(target),
+          top = _MaterialWalkthrough$.top;
 
       var height = target.getClientRects()[0].height;
 
-      var YCoordinate = top - windowHeight / 2 + height / 2;
-      var secureYCoordinate = YCoordinate > maxScrollValue ? maxScrollValue : YCoordinate;
+
+      var YCoordinate = top - containerTop - containerClientHeight / 2 + height / 2;
+      var secureYCoordinate = Math.min(YCoordinate, maxScrollValue);
 
       _log('WALK_LOCK', 'Moving Scroll to:', secureYCoordinate);
-      _log('WALK_LOCK', 'windowHeight:', windowHeight);
-      window.scrollTo(0, secureYCoordinate);
+      _log('WALK_LOCK', containerSelector + ' clientHeight:', containerClientHeight);
+
+      if (container.tagName.toLowerCase() === 'body') {
+        window.scrollTo(0, secureYCoordinate);
+      } else {
+        container.scrollTop = secureYCoordinate;
+      }
 
       // TODO: After the animation, timeout on callback
       if (locateCallback) locateCallback();
@@ -781,20 +885,24 @@ var MaterialWalkthrough = function () {
 
   }, {
     key: '_renderFrame',
-    value: function _renderFrame(target, renderCallback) {
-      // HAVING ISSUES WITH THIS WAY TO GET POSITION IN SOME TESTS
-      var position = { top: target.offsetTop };
-      // Using this line.
-      var _target$getClientRect = target.getClientRects()[0],
-          height = _target$getClientRect.height,
-          width = _target$getClientRect.width,
-          left = _target$getClientRect.left;
+    value: function _renderFrame(target, walkPoint, renderCallback) {
+      // Use the client bounding rect that includes css translation etc.
+      var _target$getBoundingCl = target.getBoundingClientRect(),
+          height = _target$getBoundingCl.height,
+          width = _target$getBoundingCl.width,
+          left = _target$getBoundingCl.left,
+          top = _target$getBoundingCl.top;
+      // Adjust the top to be relative to the document
 
+
+      var docTop = top + window.pageYOffset;
 
       var holeSize = height > width ? height : width; // Catch the biggest measure
       // Adjust with default min measure if it not higher than it
       if (holeSize < MaterialWalkthrough.MIN_SIZE) holeSize = MaterialWalkthrough.MIN_SIZE;
+      if (walkPoint && walkPoint.holeSize) holeSize = walkPoint.holeSize;
       _log('WALK_LOCK', 'Walk hole size ' + holeSize + 'px');
+      _log('WALK_LOCK', 'Gutter is ' + MaterialWalkthrough.GUTTER);
 
       var positions = {
         height: holeSize + MaterialWalkthrough.GUTTER + 'px',
@@ -804,7 +912,7 @@ var MaterialWalkthrough = function () {
         marginTop: -((holeSize + MaterialWalkthrough.GUTTER) / 2) + 'px',
 
         left: left + width / 2 + 'px',
-        top: position.top + height / 2 + 'px'
+        top: docTop + height / 2 + 'px'
       };
       DOMUtils.setStyle(MaterialWalkthrough._wrapper, positions);
       _log('WALK_LOCK', 'Positioning \n' + JSON.stringify(positions, 2));
@@ -846,13 +954,34 @@ var MaterialWalkthrough = function () {
       if (!itCanBeRenderedInRight) {
         left = itCanBeRenderedInLeft ? '-' + MaterialWalkthrough._contentWrapper.offsetWidth + 'px' : 'calc(50% - 100px)';
         textAlign = itCanBeRenderedInLeft ? 'right' : 'center';
-        marginTop = itCanBeRenderedInLeft ? 0 : itCanBeRenderedInBottom ? '20px' : '-20px';
+        marginTop = itCanBeRenderedInLeft ? 0 : itCanBeRenderedInBottom ? '10px' : '-10px';
       }
       if (!itCanBeRenderedInBottom) {
         top = itCanBeRenderedInTop ? '-' + MaterialWalkthrough._contentWrapper.offsetHeight + 'px' : MaterialWalkthrough._wrapper.offsetHeight / 2 - MaterialWalkthrough._contentWrapper.offsetHeight / 2 + 'px';
-        marginLeft = itCanBeRenderedInTop ? 0 : !itCanBeRenderedInRight ? '-20px' : '20px';
+        marginLeft = itCanBeRenderedInTop ? 0 : !itCanBeRenderedInRight ? '-10px' : '10px';
       }
       DOMUtils.setStyle(MaterialWalkthrough._contentWrapper, { left: left, top: top, textAlign: textAlign, marginTop: marginTop, marginLeft: marginLeft });
+
+      // now we have placed it lets see if its content wrapper is overhanging the screen and if so simply centre it
+      // but assume a margin
+      var cwPosition = MaterialWalkthrough._contentWrapper.getBoundingClientRect();
+      var margin = 20;
+      if (cwPosition.left < margin || cwPosition.left + cwPosition.width + margin > window.innerWidth) {
+        _log('WALK_CONTENT', 'Text would overhang to left or right: will centre ');
+        var newAbsoluteLeftPos = window.innerWidth / 2 - cwPosition.width / 2;
+        // calc how much we need to move the current x to the new x to acheive the newAbsoluteLeftPos
+        var leftShift = void 0;
+        if (cwPosition.left < margin) {
+          // shift it right 
+          leftShift = newAbsoluteLeftPos - cwPosition.left;
+        } else {
+          //shift it left
+          leftShift = -(cwPosition.left - newAbsoluteLeftPos);
+        }
+        marginLeft = marginLeft + leftShift + 'px';
+        //debugger
+        DOMUtils.setStyle(MaterialWalkthrough._contentWrapper, { 'margin-left': marginLeft });
+      }
 
       if (renderCallback) renderCallback();
     }
@@ -868,6 +997,7 @@ var MaterialWalkthrough = function () {
     value: function walk(walkPoints, callback) {
       MaterialWalkthrough._instance.points = walkPoints;
       MaterialWalkthrough._instance.currentIndex = 0;
+      MaterialWalkthrough._instance.currentAccesibleStage = 0;
       MaterialWalkthrough._instance.onCloseCallback = callback;
       if (document.querySelector('meta[name="theme-color"]')) MaterialWalkthrough.ORIGINAL_THEME_COLOR = document.querySelector('meta[name="theme-color"]').getAttribute('content');else {
         MaterialWalkthrough.ORIGINAL_THEME_COLOR = null;
@@ -876,20 +1006,49 @@ var MaterialWalkthrough = function () {
         meta.content = "";
         document.querySelector('head').appendChild(meta);
       }
+      if (MaterialWalkthrough.ENABLE_STAGE_COUNTER) MaterialWalkthrough._setupStageCounter();
       MaterialWalkthrough.to(walkPoints[0]);
     }
   }, {
-    key: 'to',
+    key: '_setupStageCounter',
 
+
+    // walk the stages to see which ones are actually accessible 
+    // so the stage counter can show valid stages
+    value: function _setupStageCounter() {
+      _log('WALK_CONTENT', ' walking content to count valid stages...');
+      MaterialWalkthrough._instance.totalAccessibleStages = 0;
+      var i = 0;
+      for (i = 0; i < MaterialWalkthrough._instance.points.length; i++) {
+        var target = MaterialWalkthrough._instance.points[i].target;
+        _log('WALK_CONTENT', 'checking ' + target);
+        if (!MaterialWalkthrough._targetIsHidden(DOMUtils.get(target))) {
+          _log('WALK_CONTENT', 'target is present ' + target);
+          MaterialWalkthrough._instance.totalAccessibleStages++;
+        }
+      }
+    }
 
     /***
      * Open the walkthrough to a single walkpoint.
      * @param {WalkPoint} walkPoint The configuration of the walkpoint
      */
+
+  }, {
+    key: 'to',
     value: function to(walkPoint) {
       MaterialWalkthrough.CURRENT_DOCUMENT_HEIGHT = document.querySelector('html').offsetHeight;
       ScrollManager.disable();
       if (!MaterialWalkthrough.isInitialized) MaterialWalkthrough._init();
+
+      // setup the stage counter if required
+      if (MaterialWalkthrough.ENABLE_STAGE_COUNTER) {
+        var node = document.querySelector('#walk-stage-step');
+        if (node) node.textContent = MaterialWalkthrough._instance.currentAccesibleStage;
+        node = document.querySelector('#walk-stage-total');
+        if (node) node.textContent = MaterialWalkthrough._instance.totalAccessibleStages;
+      }
+
       DOMUtils.removeClass(MaterialWalkthrough._wrapper, 'closed');
       MaterialWalkthrough._setWalker(walkPoint);
     }
@@ -902,6 +1061,20 @@ var MaterialWalkthrough = function () {
     key: 'closeWalker',
     value: function closeWalker() {
       _log('MSG', 'Closing Walker');
+
+      // these 4 lines used to be in the next method when reaching the end of the tour
+      // but putting them in here so they get mopped up when the tour is quit
+      MaterialWalkthrough._instance.currentIndex = 0;
+      MaterialWalkthrough._instance.currentAccesibleStage = 0;
+      MaterialWalkthrough._instance.points = null;
+      if (MaterialWalkthrough._instance.onCloseCallback) MaterialWalkthrough._instance.onCloseCallback();
+      MaterialWalkthrough._instance.onCloseCallback = null;
+      // plus clear any event listeners from the action button that may have not been cleared up if the quit button was hit
+      // we do this by replacing the button with a clone which will not have listeneners
+      var new_button = MaterialWalkthrough._actionButton.cloneNode(true);
+      MaterialWalkthrough._actionButton.parentNode.replaceChild(new_button, MaterialWalkthrough._actionButton);
+      MaterialWalkthrough._actionButton = new_button;
+
       MaterialWalkthrough._flushListeners();
       ScrollManager.enable();
 
@@ -931,18 +1104,26 @@ MaterialWalkthrough.DISABLE_HUGE_ANIMATIONS = false;
 MaterialWalkthrough.FORCE_SMALL_BORDER = false;
 MaterialWalkthrough.MIN_SIZE = 60;
 MaterialWalkthrough.GUTTER = 20;
-MaterialWalkthrough.ELEMENT_TEMPLATE = '<div id=\'walk-wrapper\' class=\'' + (MaterialWalkthrough.DISABLE_HUGE_ANIMATIONS ? 'animations-disabled' : '') + ' ' + (MaterialWalkthrough.FORCE_SMALL_BORDER ? 'small' : '') + '\'>\n      <div id=\'walk-content-wrapper\'>\n        <div id=\'walk-content\'></div>\n        <button id=\'walk-action\'></button>\n      </div>\n    </div>';
+MaterialWalkthrough.ENABLE_QUIT = false;
+MaterialWalkthrough.QUIT_TEMPLATE = '<a id=\'walk-quit-button\'>Quit tour</a>';
+MaterialWalkthrough.ENABLE_STAGE_COUNTER = false;
+MaterialWalkthrough.STAGE_COUNTER_TEMPLATE = '\n    <div id=\'walk-stage\'>\n      <span id=\'walk-stage-step\'>Step</span>\n      <span id=\'walk-stage-index\'></span>\n      <span id=\'walk-stage-of\'>of</span>\n      <span id=\'walk-stage-total\'></span>\n    </div>';
+MaterialWalkthrough.ELEMENT_TEMPLATE = null;
 MaterialWalkthrough.isInitialized = false;
 MaterialWalkthrough._wrapper = null;
 MaterialWalkthrough._contentWrapper = null;
 MaterialWalkthrough._content = null;
 MaterialWalkthrough._actionButton = null;
+MaterialWalkthrough._stageCounterWrapper = null;
+MaterialWalkthrough._quitButton = null;
 MaterialWalkthrough._instance = {
   updateHandler: null,
   mutationObserver: null,
   points: null,
   currentIndex: null,
-  onCloseCallback: null
+  onCloseCallback: null,
+  totalAccessibleStages: null,
+  currentAccesibleStage: null
 };
 
 return MaterialWalkthrough;
